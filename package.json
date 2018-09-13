@@ -1,0 +1,32 @@
+{
+  "name": "hexagon-tessalator",
+  "version": "1.0.0",
+  "description": "i want to work with renderers and classes closer",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./server/app",
+    "bundle": "webpack --mode=development --watch"
+  },
+  "author": "Jacob",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "npm": "^6.4.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/polyfill": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^8.0.0",
+    "css-loader": "^1.0.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.9.3",
+    "nodemon": "^1.18.4",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.0",
+    "webpack": "^4.17.1",
+    "webpack-command": "^0.4.1"
+  }
+}
