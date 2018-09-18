@@ -21,7 +21,6 @@ App.prototype = {
   animate: function(){
     window.requestAnimationFrame(() => this.animate());
     this.events.emitKeyPairs();
-    this.renderer.update();
     this.renderer.render(this.level);
   }
 }

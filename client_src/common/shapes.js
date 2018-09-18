@@ -1,4 +1,4 @@
-import { Hex, Point } from "./hexGrid";
+import  Hex  from "./Hex";
 
 //a note to prevent confusion
 //a Hex is a single hexagon-shaped tile on the grid, 
@@ -17,7 +17,7 @@ Hexagon.prototype = {
       let r1 = Math.max(-this.radius, -q - this.radius);
       let r2 = Math.min(this.radius, -q + this.radius);
       for(let r = r1; r <= r2; r++){
-        const hex = new Hex(q, r, -q-r);
+        const hex = new Hex(q, r);
         iterable.push(hex);
       }
     }
@@ -48,7 +48,7 @@ Rectangle.prototype = {
       for(let w = -h_offset; w < (this.width*2 + 1) - h_offset; w++){
         let r = w - this.width;
         let q = h - this.height;
-        iterable.push(new Hex(r, q, -r - q));
+        iterable.push(new Hex(r, q));
       }
     }
     return iterable;

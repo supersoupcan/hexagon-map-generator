@@ -1,20 +1,24 @@
+import * as math from 'mathjs';
 import Layer from './Layers';
-import { Layout, Point } from '../common/hexGrid';
-import { tileRender, inputRender } from './render';
-
+import Hex from '../common/Hex';
 import { Rectangle, Hexagon } from '../common/shapes';
+import { Layout, orientations } from './layout';
+import { tileRender, inputRender } from './render';
+import { translate, TransformGroup } from './transform2D';
+
 
 const Viewport = function(size){
   this.size = size;
   this.recalculate = true;
-  this.tiles = null;
+  this.activeTiles = [];
   this.layers = new Map([
     ['tiles', new Layer(window.document.getElementById('vp_tiles'), tileRender)],
     ['input', new Layer(window.document.getElementById('vp_input'), inputRender)]
   ]);
   this.layout = new Layout(
-    new Point(this.size[0] / 2, this.size[1] /2),
-    new Point(10, 10)
+    [size[0]/ 2, size[1]/2],
+    [10, 10],
+    orientations.pointy
   )
   this.cursor = null;
 }
@@ -36,64 +40,71 @@ Viewport.prototype = {
   },
   click: function(e){
     const { clientX, clientY } = e;
-    const target = new Point(clientX, clientY);
-    const hex = target.toHex(this.layout).round();
+    const target = [clientX, clientY, 1];
+    const hex = math.multiply(target, this.layout.transformStrToHex());
+    console.log(hex);
+
   },
   move: function(keys){
-    const { origin, size } = this.layout;
-    if(keys['ArrowRight']) origin.x -= 50/size.x;
-    if(keys['ArrowLeft']) origin.x += 50/size.x;
-    if(keys['ArrowDown']) origin.y -= 50/size.y;
-    if(keys['ArrowUp']) origin.y += 50/size.y;
+    const { origin } = this.layout;
+    if(keys['ArrowRight']) origin[0] -= 5;
+    if(keys['ArrowLeft']) origin[0] += 5;
+    if(keys['ArrowDown']) origin[1] -= 5;
+    if(keys['ArrowUp']) origin[1] += 5;
     this.recalculate = true;
   },
   scale: function(keys){
+    const { size } = this.layout;
     if(keys['z']){
-      this.layout.size.x *=1.05;
-      this.layout.size.y *=1.05;
+      size[0] *=1.05;
+      size[1] *=1.05;
     }
     if(keys['x']){
-      this.layout.size.x /=1.05;
-      this.layout.size.y /=1.05;
+      size[0] /=1.05;
+      size[1] /=1.05;
     }
     this.recalculate = true;
   },
   calculateActiveTiles: function(level){
-    const center = new Point(this.size[0]/2, this.size[1]/2).toHex(this.layout).round();
-    console.log(center.key);
-
-    const hexWidth = Math.sqrt(3) * this.layout.size.v[0];
-    const hexHeight = 3/2 * this.layout.size.v[1];
-    const hexHalfWidth = Math.ceil(this.size[0] / hexWidth / 2) + 1;
-    const hexHalfHeight = Math.ceil(this.size[1] / hexHeight / 2) + 1;
-
+    let activeTiles = [];
+    /*
+    const { size, origin } = this.layout;
+    const hexWidth = Math.sqrt(3) * size[0];
+    const hexHeight = 3/2 * size[1];
+    const hexHalfWidth = Math.ceil(this.size[0] / hexWidth / 2 + 0.25);
+    const hexHalfHeight = Math.ceil(this.size[1] / hexHeight / 2 + 0.25);
     const rect = new Rectangle(hexHalfWidth, hexHalfHeight);
-    let tiles = [];
 
+    const centerHex = new Hex(...math.multiply(
+      [this.size[0]/2, this.size[1]/2, 1],
+      this.layout.transformStrToHex()
+    )).round();
+    
+    let activeTiles = [];
     rect.tiles().forEach((tile) => {
-      let hex = tile.add(center);
-      if(level.data.has(hex.key)){
-        tiles.push(hex.key)
+      const currentHex = tile.add(centerHex);
+      if(level.data.has(currentHex.key)){
+        activeTiles.push(currentHex.key)
       }
     });
-
-    this.tiles = tiles;
+    */
+    level.data.forEach((tile) => { activeTiles.push(tile.hex.key)});
+    this.activeTiles = activeTiles;
     this.recalculate = false;
   },
   update: function(){
-
   },
   render: function(level){
     if(this.recalculate){
       this.calculateActiveTiles(level);
       this.layers.forEach((layer) => {
-        layer.render(this.tiles, this.layout, level, this.cursor);
+        layer.render(this, level);
         layer.rerender = false;
       })
     }else{
       this.layers.forEach((layer) => {
         if(layer.rerender){
-          layer.render(this.tiles, this.layout, level, this.cursor);
+          layer.render(this, level);
           layer.rerender = false;
         }
       })
